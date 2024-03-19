@@ -16,6 +16,7 @@
         </tr>
         <?php
         require_once 'config.php';
+        
 
         $sql = "SELECT * FROM catalog";
         $result = mysqli_query($conn, $sql);
