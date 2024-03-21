@@ -38,6 +38,21 @@ function convertLetterToNumber($letter) {
     }
 }
 
+// Функция для поиска буквы, соответствующей заданной цифре
+function findLetterForNumber($number) {
+    // Проверяем, что число находится в диапазоне от 1 до 26
+    if ($number >= 1 && $number <= 26) {
+        // Вычисляем ASCII-код буквы
+        $ascii_code = $number + 64; // 64 - ASCII-код буквы 'A'
+        // Преобразуем ASCII-код в символ (букву)
+        $letter = chr($ascii_code);
+        return $letter;
+    } else {
+        // Если число не находится в диапазоне от 1 до 26, вернем false
+        return false;
+    }
+}
+
 // Генерация капчи
 $value1 = generateRandomCharacter();
 $value2 = generateRandomCharacter();

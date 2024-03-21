@@ -1,14 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Добавить элемент</title>
+    <meta charset="UTF-8">
+    <title>Добавить новый товар</title>
 </head>
 <body>
-    <h1>Добавить элемент</h1>
-    <form action="create_process.php" method="POST" enctype="multipart/form-data">
+    <h2>Добавить новый товар</h2>
+    <form action="create_process.php" method="post" enctype="multipart/form-data">
         Название: <input type="text" name="name"><br>
+        Описание: <textarea name="description"></textarea><br>
+        Цена: <input type="text" name="price"><br>
         Изображение: <input type="file" name="image"><br>
-        <input type="submit" value="Сохранить">
+        <input type="submit" value="Добавить">
     </form>
 </body>
 </html>
