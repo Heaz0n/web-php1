@@ -10,61 +10,21 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Функция для генерации случайного текстового символа (буквы) или цифры
+// Функция для генерации случайной текстовой буквы
 function generateRandomCharacter() {
     $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     return $characters[rand(0, strlen($characters) - 1)];
 }
 
-// Функция для генерации случайной операции
-function generateRandomOperation() {
-    $operations = array('+', '-', '*', '/');
-    return $operations[array_rand($operations)];
-}
-
-// Функция для преобразования буквы в число
-function convertLetterToNumber($letter) {
-    // Преобразуем букву в верхний регистр, чтобы обработать и строчные буквы
-    $letter = strtoupper($letter);
-
-    // Проверяем, что символ - буква латинского алфавита
-    if (ctype_alpha($letter) && strlen($letter) == 1) {
-        // Вычисляем числовое значение буквы
-        $number = ord($letter) - 64; // 64 - ASCII-код буквы 'A'
-        return $number;
-    } else {
-        // Если символ не является буквой латинского алфавита, вернем false
-        return false;
-    }
-}
-
 // Генерация капчи
 $value1 = generateRandomCharacter();
 $value2 = generateRandomCharacter();
-$operation = generateRandomOperation();
 
-// Вычисление ответа на капчу
-switch ($operation) {
-    case '+':
-        $answer = convertLetterToNumber($value1) + convertLetterToNumber($value2);
-        break;
-    case '-':
-        $answer = convertLetterToNumber($value1) - convertLetterToNumber($value2);
-        break;
-    case '*':
-        $answer = convertLetterToNumber($value1) * convertLetterToNumber($value2);
-        break;
-    case '/':
-        // Деление на ноль не должно быть разрешено
-        do {
-            $value2 = generateRandomCharacter();
-        } while (convertLetterToNumber($value2) == 0);
-        $answer = convertLetterToNumber($value1) / convertLetterToNumber($value2);
-        break;
-}
+// Вычисление ответа на капчу (вычитание ASCII-кодов символов)
+$answer = ord($value1) - ord($value2);
 
 // Сохранение капчи в базе данных
-$sql = "INSERT INTO captcha (value1, value2, operation, answer) VALUES ('$value1', '$value2', '$operation', '$answer')";
+$sql = "INSERT INTO captcha (value1, value2, answer) VALUES ('$value1', '$value2', '$answer')";
 if ($conn->query($sql) === TRUE) {
     echo "Captcha created successfully!";
 } else {
@@ -72,8 +32,66 @@ if ($conn->query($sql) === TRUE) {
 }
 
 // Вывод капчи на экран
-echo "$value1 $operation $value2 = ";
+echo "$value1 - $value2 = ";
 
-// Закрытие соединения с базой данных. Добавить подверждающую капчу типо на примере робота.
+// Закрытие соединения с базой данных
 $conn->close();
 ?>
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Проверка капчи</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .message {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        iframe {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <?php
+        // Форма для ввода ответа на капчу
+        echo '<form action="check_captcha.php" method="post">';
+        echo '<label for="captcha">Введите ответ на капчу:</label>';
+        echo '<input type="text" id="captcha" name="captcha">';
+        echo '<input type="submit" value="Проверить">';
+        echo '</form>';
+        ?>
+    </div>
+</body>
+</html>

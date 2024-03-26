@@ -1,50 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gallery</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <?php include 'header.php'; ?>
+<?php
+// Подключение к базе данных
+$servername = "127.0.0.1";
+$username = "root";
+$password = "";
+$dbname = "php6";
 
-    <h2>Gallery</h2>
-    <div class="gallery">
-        <?php
-        // Вывод изображений из базы данных
-        $db_host = '127.0.0.1';
-        $db_user = 'root';
-        $db_password = '';
-        $db_name = 'php6';
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-        $conn = mysqli_connect($db_host, $db_user, $db_password, $db_name);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
-        if (!$conn) {
-            die("Connection failed: " . mysqli_connect_error());
-        }
+// Обработка загрузки файла
+if(isset($_FILES['file'])) {
+    $file = $_FILES['file'];
 
-        $sql = "SELECT * FROM gallery_images";
-        $result = mysqli_query($conn, $sql);
+    $fileName = $file['name'];
+    $fileTmpName = $file['tmp_name'];
+    $fileSize = $file['size'];
 
-        if (mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                echo '<a data-fancybox="images" href="' . $row['image_path'] . '"><img src="' . $row['image_path'] . '" alt="' . $row['image_name'] . '"></a>';
-            }
+    $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    $allowedExtensions = array('jpg', 'jpeg', 'png', 'gif');
+
+    if(in_array($fileExt, $allowedExtensions)) {
+        if($fileSize <= 5000000) { // Максимальный размер файла (в байтах)
+            $fileNameNew = uniqid('', true) . "." . $fileExt;
+            $fileDestination = 'images/' . $fileNameNew;
+            move_uploaded_file($fileTmpName, $fileDestination);
+
+            // Сохранение информации о файле в базе данных
+            $stmt = $conn->prepare("INSERT INTO images (path, size, name) VALUES (?, ?, ?)");
+            $stmt->bind_param("sis", $fileDestination, $fileSize, $fileName);
+            $stmt->execute();
+
+            // Возвращаем URL нового изображения
+            echo json_encode(array("status" => "success", "url" => $fileDestination));
+            exit;
         } else {
-            echo "0 results";
+            echo json_encode(array("status" => "error", "message" => "Размер файла слишком большой. Максимальный размер файла: 5MB."));
+            exit;
         }
+    } else {
+        echo json_encode(array("status" => "error", "message" => "Неверный формат файла. Допустимые форматы: jpg, jpeg, png, gif."));
+        exit;
+    }
+}
 
-        mysqli_close($conn);
-        ?>
-    </div>
+// Получение списка изображений из базы данных
+$sql = "SELECT * FROM images";
+$result = $conn->query($sql);
 
-    <!-- Форма загрузки изображения -->
-    <form action="upload.php" method="post" enctype="multipart/form-data">
-        <input type="file" name="fileToUpload" id="fileToUpload">
-        <input type="submit" value="Upload Image" name="submit">
-    </form>
+echo "<h2>Галерея изображений</h2>";
 
-    <?php include 'footer.php'; ?>
-</body>
-</html>
+if ($result->num_rows > 0) {
+    echo "<div style='display: flex; flex-wrap: wrap;'>";
+    while($row = $result->fetch_assoc()) {
+        echo "<div style='margin: 10px;'>";
+        echo "<a href='" . $row['path'] . "' target='_blank'>";
+        echo "<img src='" . $row['path'] . "' style='width: 150px; height: 150px;' />";
+        echo "</a>";
+        echo "<p>Название: " . $row['name'] . "</p>";
+        echo "<p>Размер: " . $row['size'] . " байт</p>";
+        echo "<p>Лайки: " . $row['likes'] . "</p>";
+        echo "<p>Просмотры: " . $row['views'] . "</p>";
+        echo "</div>";
+    }
+    echo "</div>";
+} else {
+    echo "Нет изображений.";
+}
+
+$conn->close();
+?>
+
