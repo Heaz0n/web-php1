@@ -1,3 +1,15 @@
+<?php
+session_start();
+
+// Проверка авторизации пользователя
+if (!isset($_SESSION['username'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Если пользователь авторизован, то можно отобразить контент страницы
+?>
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,12 +19,10 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header id="header"> <!-- Добавляем id="header" для доступа к элементу header -->
-        <?php include 'header.php'; ?>
-    </header>
-    
+    <?php include 'header.php'; ?>
+
     <main>
-        <h1>Добро пожаловать на мой сайт</h1>
+        <h1>Добро пожаловать на мой сайт, <?php echo $_SESSION['username']; ?>!</h1>
         <section>
             <p>Это образцовый абзац.</p>
             <h2>Подзаголовок</h2>
@@ -22,7 +32,7 @@
             <p>Еще один абзац с рандомным текстом.</p>
         </section>
     </main>
-    
+
     <footer>
         <?php include 'footer.php'; ?>
     </footer>

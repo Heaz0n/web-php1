@@ -1,25 +1,21 @@
 <?php
-// Подключение к базе данных
-$servername = "127.0.0.1";
-$username = "root";
-$password = "";
-$dbname = "php6";
+// Подключаем файл с подключением к базе данных
+require_once 'db_connection.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+// Проверяем, существует ли ключ 'id' в массиве $_GET
+if(isset($_GET['id'])) {
+    $id = $_GET['id'];
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+    // Удаление товара из базы данных
+    $sql = "DELETE FROM products WHERE id=$id";
 
-// Получение id товара из URL и удаление товара из базы данных
-$id = $_GET['id'];
-
-$sql = "DELETE FROM products WHERE id=$id";
-
-if ($conn->query($sql) === TRUE) {
-    header("Location: index.php");
+    if ($conn->query($sql) === TRUE) {
+        header("Location: index.php");
+    } else {
+        echo "Error deleting record: " . $conn->error;
+    }
 } else {
-    echo "Error deleting record: " . $conn->error;
+    echo "Не указан id товара.";
 }
 ?>
 
@@ -33,7 +29,8 @@ if ($conn->query($sql) === TRUE) {
 
 <h2>Удаление товара</h2>
 <p>Вы уверены, что хотите удалить этот товар?</p>
-<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"] . "?id=$id"); ?>">
+<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+    <input type="hidden" name="id" value="<?php echo isset($id) ? $id : ''; ?>">
     <input type="submit" value="Да">
     <a href="index.php">Нет</a>
 </form>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captcha Example</title>
+</head>
+<body>
+    <h2>Пример капчи</h2>
+    <form action="verify.php" method="post">
+        <p>Введите код с картинки: <span id="captcha"><?php include 'captcha.php'; ?></span></p>
+        <input type="text" name="captcha_input" placeholder="Введите код с картинки" required>
+        <button type="submit">Проверить</button>
+    </form>
+</body>
+</html>
